@@ -26,11 +26,11 @@ echo "未安装任何节点"
 fi
 }
 echo "================================================================"
-echo "甬哥Github项目 ：github.com/yonggekkk")
-echo "甬哥Blogger博客 ：ygkkk.blogspot.com")
-echo "甬哥YouTube频道 ：www.youtube.com/@ygkkk")
+echo "甬哥Github项目 ：github.com/yonggekkk"
+echo "甬哥Blogger博客 ：ygkkk.blogspot.com"
+echo "甬哥YouTube频道 ：www.youtube.com/@ygkkk"
 echo "================================================================"
-echo "支持 Workers域名、Pages域名、自定义域名")
+echo "支持 Workers域名、Pages域名、自定义域名"
 echo "可选 ECH-TLS、普通TLS、无TLS 三种代理模式，应对各种阻断封杀"
 echo "脚本快捷方式：bash cfsh.sh"
 echo "================================================================"
@@ -67,8 +67,9 @@ nohup $HOME/cfs5http/cfwp client_ip=:"$port" dns="$dns" cf_domain="$cf_domain" c
 EOF
 chmod +x "$HOME/cfs5http/cf_$port.sh"
 bash "$HOME/cfs5http/cf_$port.sh"
-echo "安装完毕，Socks5/Http节点已在运行中，查看运行日志请选择3"
+echo "安装完毕，Socks5/Http节点已在运行中，查看运行日志请选择3" && sleep 5
 sed -n '1,16p' "$HOME/cfs5http/$port.log" | grep '服务端域名与端口\|客户端地址与端口\|运行中的优选IP'
+until grep -q '服务端域名与端口\|客户端地址与端口\|运行中的优选IP' "$HOME/cfs5http/$port.log"; do sleep 1; done; head -n 16 "$HOME/cfs5http/$port.log" | grep '服务端域名与端口\|客户端地址与端口\|运行中的优选IP'
 echo
 elif [ "$menu" = "3" ]; then
 showmenu
@@ -87,7 +88,7 @@ read -p "选择要查看的端口节点配置信息及日志（输入端口即�
 { echo "$port端口节点配置信息及日志如下：" ; echo "------------------------------------"; sed -n '1,16p' "$HOME/cfs5http/$port.log" | grep '服务端域名与端口\|客户端地址与端口\|运行中的优选IP' ; echo "------------------------------------" ; sed '1,16d' "$HOME/cfs5http/$port.log" | tail -n 10; }
 elif [ "$menu" = "4" ]; then
 ps | grep '[c]fwp' | awk '{print $1}' | xargs kill -9
-rm -rf "$HOME/cfs5http"
+rm -rf "$HOME/cfs5http" cfsh.sh
 echo "卸载完成"
 else
 exit
