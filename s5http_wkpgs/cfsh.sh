@@ -70,12 +70,12 @@ read -p "6、ECH开关（回车跳过或者输入y表示开启ECH，输入n表�
 enable_ech=$([ -z "$menu" ] || [ "$menu" = y ] && echo y || echo n)
 echo
 read -p "7、分流开关（回车跳过或者输入y表示国内外分流代理，输入n表示全局代理）:" menu
-enable_ech=$([ -z "$menu" ] || [ "$menu" = y ] && echo y || echo n)
+cnrule=$([ -z "$menu" ] || [ "$menu" = y ] && echo y || echo n)
 echo
 SCRIPT="$HOME/cfs5http/cf_$port.sh"
 cat > "$SCRIPT" << EOF
 #!/bin/bash
-nohup $HOME/cfs5http/cfwp client_ip=:"$port" dns="$dns" cf_domain="$cf_domain" cf_cdnip="$cf_cdnip" token="$token" enable_ech="$enable_ech" cnrule=%cnrule% > "$HOME/cfs5http/$port.log" 2>&1 &
+nohup $HOME/cfs5http/cfwp client_ip=:"$port" dns="$dns" cf_domain="$cf_domain" cf_cdnip="$cf_cdnip" token="$token" enable_ech="$enable_ech" cnrule="$cnrule" > "$HOME/cfs5http/$port.log" 2>&1 &
 EOF
 chmod +x "$SCRIPT"
 INIT_SYSTEM=$(cat /proc/1/comm)
