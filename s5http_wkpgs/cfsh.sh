@@ -92,7 +92,7 @@ SCRIPT="$HOME/cfs5http/cf_$port.sh"
 LOG="$HOME/cfs5http/$port.log"
 cat > "$SCRIPT" << EOF
 #!/bin/bash
-INIT_SYSTEM=\$(cat /proc/1/comm)
+[ -f /proc/1/comm ] && INIT_SYSTEM=\$(cat /proc/1/comm)
 CMD="$HOME/cfs5http/cfwp \
 client_ip=:$port \
 dns=$dns \
@@ -104,7 +104,7 @@ cnrule=$cnrule"
 if [ "\$INIT_SYSTEM" = "systemd" ]; then
 exec \$CMD
 else
-nohup \$CMD > "\$LOG" 2>&1 &
+nohup \$CMD > "$LOG" 2>&1 &
 fi
 EOF
 chmod +x "$SCRIPT"
