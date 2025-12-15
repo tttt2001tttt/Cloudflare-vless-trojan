@@ -25,6 +25,12 @@ else
 echo "未安装任何节点"
 fi
 }
+delsystem(){
+systemctl stop "cf_$port.service" >/dev/null 2>&1
+systemctl disable "cf_$port.service" >/dev/null 2>&1
+rm -f "/etc/systemd/system/cf_$port.service"
+systemctl daemon-reload >/dev/null 2>&1
+}
 echo "================================================================"
 echo "甬哥Github项目 ：github.com/yonggekkk"
 echo "甬哥Blogger博客 ：ygkkk.blogspot.com"
@@ -73,6 +79,7 @@ read -p "7、分流开关（回车跳过或者输入y表示国内外分流代理
 cnrule=$([ -z "$menu" ] || [ "$menu" = y ] && echo y || echo n)
 echo
 SCRIPT="$HOME/cfs5http/cf_$port.sh"
+LOG="$HOME/cfs5http/$port.log"
 cat > "$SCRIPT" << EOF
 #!/bin/bash
 INIT_SYSTEM=\$(cat /proc/1/comm)
@@ -84,7 +91,6 @@ cf_cdnip=$cf_cdnip \
 token=$token \
 enable_ech=$enable_ech \
 cnrule=$cnrule"
-LOG="$HOME/cfs5http/$port.log"
 if [ "\$INIT_SYSTEM" = "systemd" ]; then
 exec \$CMD
 else
@@ -102,6 +108,8 @@ After=network.target
 Type=simple
 ExecStart=/bin/bash $SCRIPT
 Restart=always
+StandardOutput=append:$LOG
+StandardError=append:$LOG
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -110,8 +118,7 @@ systemctl start "cf_$port.service" >/dev/null 2>&1
 systemctl enable "cf_$port.service" >/dev/null 2>&1
 elif [ "$INIT_SYSTEM" = "procd" ]; then
 RCLOCAL="/etc/rc.local"
-[ ! -f "$RCLOCAL" ] && touch "$RCLOCAL"
-grep -q "$SCRIPT" "$RCLOCAL" || sed -i "/^exit 0/i /bin/bash $SCRIPT" "$RCLOCAL"
+[ ! -f "$RCLOCAL" ] && echo -e "#!/bin/sh\nexit 0" > "$RCLOCAL"; grep -q "$SCRIPT" "$RCLOCAL" || (grep -q "^exit 0" "$RCLOCAL" && sed -i "/^exit 0/i /bin/bash $SCRIPT" "$RCLOCAL" || echo "/bin/bash $SCRIPT" >> "$RCLOCAL"); tail -n1 "$RCLOCAL" | grep -q "^exit 0" || echo "exit 0" >> "$RCLOCAL"
 bash "$SCRIPT"
 else
 bash "$SCRIPT"
@@ -131,9 +138,7 @@ echo
 read -p "选择要删除的端口节点（输入端口即可）:" port
 pid=$(lsof -t -i :$port)
 if [ -n "$pid" ]; then
-systemctl stop "cf_$port.service" >/dev/null 2>&1
-systemctl disable "cf_$port.service" >/dev/null 2>&1
-rm -rf "/etc/systemd/system/cf_$port.service"
+delsystem
 kill -9 $pid >/dev/null 2>&1
 echo "端口 $port 的进程已被终止"
 else
@@ -145,11 +150,8 @@ showmenu
 if [ -n "$files" ]; then
 while IFS= read -r port; do
 echo "$port"
-systemctl stop "cf_$port.service" >/dev/null 2>&1
-systemctl disable "cf_$port.service" >/dev/null 2>&1
-rm -f "/etc/systemd/system/cf_$port.service"
+delsystem
 done <<< "$files"
-systemctl daemon-reload
 fi
 ps | grep '[c]fwp' | awk '{print $1}' | xargs kill -9
 rm -rf "$HOME/cfs5http" cfsh.sh
